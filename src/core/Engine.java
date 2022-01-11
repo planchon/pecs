@@ -16,6 +16,7 @@ public class Engine {
 	
 	private Map<Class<? extends ECSSystem>, ECSSystem> systemByClass = new HashMap();
 	private List<ECSSystem> systems = new ArrayList<>();
+	private List<ECSSystem> renderSystem = new ArrayList<>();
 	
 	private FamilyManager fm = new FamilyManager(entities);
 	
@@ -39,6 +40,20 @@ public class Engine {
 		}
 
 		systems.add(system);
+		system.addedToEngine(this);
+		systemByClass.put(systemType, system);
+	}
+
+	public void addRenderSystem(ECSSystem system) {
+		Class<? extends ECSSystem> systemType = system.getClass();
+		ECSSystem oldSystem = getSystem(systemType);
+
+		// the system was already in the engine
+		if (oldSystem != null) {
+			removeSystem(oldSystem);
+		}
+
+		renderSystem.add(system);
 		system.addedToEngine(this);
 		systemByClass.put(systemType, system);
 	}
@@ -88,6 +103,13 @@ public class Engine {
 	public void update(double dt) {
 		for (int i = 0; i < systems.size(); i++) {
 			ECSSystem updating = systems.get(i);
+			updating.update(dt);
+		}
+	}
+
+	public void render(double dt) {
+		for (int i = 0; i < renderSystem.size(); i++) {
+			ECSSystem updating = renderSystem.get(i);
 			updating.update(dt);
 		}
 	}
